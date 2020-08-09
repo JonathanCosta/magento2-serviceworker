@@ -5,12 +5,13 @@ A Magento 2 extension that adds [Service Worker](https://developer.mozilla.org/e
 Features:
 * Fully customisable Service Worker script
 * Cache-first approach for page assets resulting in faster page loads
+* Offline cms page, when no network is available 
 
 ## Installation
 
 Add this extension to your Magento installation with Composer:
 
-    composer require m2-boilerplate/module-service-worker/module-service-worker
+    composer require m2-boilerplate/module-service-worker
 
 ## Usage
 
