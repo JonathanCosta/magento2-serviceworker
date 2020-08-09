@@ -1,7 +1,11 @@
 <?php
 
-namespace Meanbee\ServiceWorker\Helper;
+namespace M2Boilerplate\ServiceWorker\Helper;
 
+use Magento\Cms\Helper\Page;
+use Magento\Framework\App\DeploymentConfig;
+use Magento\Framework\App\Helper\Context;
+use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Store\Model\ScopeInterface;
 
 class Config extends \Magento\Framework\App\Helper\AbstractHelper
@@ -15,20 +19,28 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
 
     const SERVICEWORKER_ENDPOINT = "serviceworker.js";
 
-    /** @var \Magento\Cms\Helper\Page $cmsPageHelper */
+    /** @var Page $cmsPageHelper */
     protected $cmsPageHelper;
 
-    /** @var \Magento\Framework\App\DeploymentConfig $deploymentConfig */
+    /** @var DeploymentConfig $deploymentConfig */
     protected $deploymentConfig;
 
-    /** @var \Magento\Framework\Serialize\Serializer\Json $serializer */
+    /** @var Json $serializer */
     protected $serializer;
 
+    /**
+     * Config constructor.
+     *
+     * @param Context        $context
+     * @param Page                     $cmsPageHelper
+     * @param DeploymentConfig      $deploymentConfig
+     * @param Json $serializer
+     */
     public function __construct(
-        \Magento\Framework\App\Helper\Context $context,
-        \Magento\Cms\Helper\Page $cmsPageHelper,
-        \Magento\Framework\App\DeploymentConfig $deploymentConfig,
-        \Magento\Framework\Serialize\Serializer\Json $serializer
+        Context $context,
+        Page $cmsPageHelper,
+        DeploymentConfig $deploymentConfig,
+        Json $serializer
     ) {
         parent::__construct($context);
 
@@ -61,50 +73,10 @@ class Config extends \Magento\Framework\App\Helper\AbstractHelper
         if ($identifier = $this->scopeConfig->getValue(static::XML_PATH_OFFLINE_PAGE, ScopeInterface::SCOPE_STORE)) {
             return $this->cmsPageHelper->getPageUrl($identifier);
         }
+        return null;
     }
 
-    /**
-     * Get the prefix path for backend requests.
-     *
-     * @return string
-     */
-    public function getBackendPathPrefix()
-    {
-        return $this->_urlBuilder->getBaseUrl()
-            . $this->deploymentConfig->get(\Magento\Backend\Setup\ConfigOptionsList::CONFIG_PATH_BACKEND_FRONTNAME)
-            . "/*";
-    }
 
-    /**
-     * Get the configured paths with custom caching strategies.
-     *
-     * @param string $store
-     *
-     * @return array[]
-     */
-    public function getCustomStrategies($store = null)
-    {
-        $custom_strategies = $this->scopeConfig->getValue(static::XML_PATH_CUSTOM_STRATEGIES, ScopeInterface::SCOPE_STORE, $store);
-
-        if (is_string($custom_strategies) && !empty($custom_strategies)) {
-            $custom_strategies = $this->serializer->unserialize($custom_strategies);
-        }
-
-        if (!is_array($custom_strategies)) {
-            return [];
-        }
-
-        $base_url = $this->_urlBuilder->getBaseUrl(["_scope" => $store]);
-
-        array_walk($custom_strategies, function (&$item) use ($base_url) {
-            $item["path"] = $base_url . $item["path"];
-        });
-
-        // Reset indexes to allow encoding as JSON array
-        $custom_strategies = array_values($custom_strategies);
-
-        return $custom_strategies;
-    }
 
     /**
      * Check if Offline Google Analytics features are enabled.

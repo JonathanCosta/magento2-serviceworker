@@ -1,26 +1,28 @@
 {
-  "name": "@meanbee/magento2-serviceworker",
+  "name": "@m2-boilerplate/module-service-worker",
   "version": "2.0.0",
   "description": "A Magento 2 extension that adds Service Worker support.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build:clean": "rm -rf src/view/frontend/web/js/lib/*",
-    "build:copy": "find node_modules -path '*/importScripts/*' -name '*.prod.*' -exec install -t src/view/frontend/web/js/lib {} +",
+    "build:copy": "find node_modules -path '*/workbox-*/build/*' -name '*.prod.*' -exec cp {} src/view/frontend/web/js/lib/ \\;",
     "build": "npm run build:clean && npm run build:copy"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/meanbee/magento2-serviceworker.git"
+    "url": "git+https://github.com/m2-boilerplate/magento2-serviceworker"
   },
-  "author": "Tomas Gerulaitis <tomas.gerulaitis@meanbee.com>",
+  "author": "Thomas Hampe <github@hampe.co>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/meanbee/magento2-serviceworker/issues"
+    "url": "https://github.com/m2-boilerplate/magento2-serviceworker/issues"
   },
-  "homepage": "https://github.com/meanbee/magento2-serviceworker#readme",
+  "homepage": "https://github.com/m2-boilerplate/magento2-serviceworker#readme",
   "dependencies": {
-    "workbox-google-analytics": "^1.0.0",
-    "workbox-sw": "^1.0.1"
+    "workbox-google-analytics": "^5.1",
+    "workbox-sw": "^5.1",
+    "workbox-precaching": "^5.1",
+    "workbox-navigation-preload": "^5.1"
   }
 }

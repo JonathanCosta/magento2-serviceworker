@@ -1,6 +1,6 @@
 <?php
 
-namespace Meanbee\ServiceWorker\Controller\Index;
+namespace M2Boilerplate\ServiceWorker\Controller\Index;
 
 class Js extends \Magento\Framework\App\Action\Action
 {

@@ -1,8 +1,8 @@
 <?php
 
-namespace Meanbee\ServiceWorker\Controller;
+namespace M2Boilerplate\ServiceWorker\Controller;
 
-use Meanbee\ServiceWorker\Helper\Config;
+use M2Boilerplate\ServiceWorker\Helper\Config;
 
 class Router implements \Magento\Framework\App\RouterInterface
 {

@@ -1,8 +1,8 @@
 <?php
 
-namespace Meanbee\ServiceWorker\Block;
+namespace M2Boilerplate\ServiceWorker\Block;
 
-use Meanbee\ServiceWorker\Helper\Config;
+use M2Boilerplate\ServiceWorker\Helper\Config;
 
 class Register extends \Magento\Framework\View\Element\Template
 {
