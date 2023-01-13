@@ -1,34 +1,38 @@
 <?php
 
-namespace Meanbee\ServiceWorker\Setup;
+namespace M2Boilerplate\ServiceWorker\Setup;
 
+use Magento\Cms\Model\PageFactory;
+use Magento\Cms\Model\PageRepository;
+use Magento\Framework\App\Config\Storage\WriterInterface;
+use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Framework\Setup\InstallDataInterface;
 use Magento\Framework\Setup\ModuleContextInterface;
 use Magento\Framework\Setup\ModuleDataSetupInterface;
 use Magento\Store\Model\Store;
-use Meanbee\ServiceWorker\Model\Config\Source\CachingStrategy;
+use M2Boilerplate\ServiceWorker\Model\Config\Source\CachingStrategy;
 
 class InstallData implements InstallDataInterface
 {
     const CMS_TEMPLATE_DIR = "cms";
 
-    /** @var \Magento\Cms\Model\PageFactory $pageFactory */
+    /** @var PageFactory $pageFactory */
     protected $pageFactory;
 
-    /** @var \Magento\Cms\Model\PageRepository $pageRepository */
+    /** @var PageRepository $pageRepository */
     protected $pageRepository;
 
-    /** @var \Magento\Framework\App\Config\Storage\WriterInterface $configWriter */
+    /** @var WriterInterface $configWriter */
     protected $configWriter;
 
-    /** @var \Magento\Framework\Serialize\Serializer\Json $serializer */
+    /** @var Json $serializer */
     protected $serializer;
 
     public function __construct(
-        \Magento\Cms\Model\PageFactory $pageFactory,
-        \Magento\Cms\Model\PageRepository $pageRepository,
-        \Magento\Framework\App\Config\Storage\WriterInterface $configWriter,
-        \Magento\Framework\Serialize\Serializer\Json $serializer
+        PageFactory $pageFactory,
+        PageRepository $pageRepository,
+        WriterInterface $configWriter,
+        Json $serializer
     ) {
         $this->pageFactory = $pageFactory;
         $this->pageRepository = $pageRepository;
@@ -43,6 +47,7 @@ class InstallData implements InstallDataInterface
      * @param ModuleContextInterface   $context
      *
      * @return void
+     * @throws \Magento\Framework\Exception\CouldNotSaveException
      */
     public function install(ModuleDataSetupInterface $setup, ModuleContextInterface $context)
     {
@@ -67,20 +72,6 @@ class InstallData implements InstallDataInterface
 
             $this->pageRepository->save($page);
         }
-
-        /**
-         * Add custom strategies
-         */
-        $strategies = [
-            ["path" => "checkout/", "strategy" => CachingStrategy::NETWORK_ONLY],
-            ["path" => "customer/account/create*", "strategy" => CachingStrategy::NETWORK_ONLY],
-            ["path" => "checkout/account/login*", "strategy" => CachingStrategy::NETWORK_ONLY],
-        ];
-
-        $this->configWriter->save(
-            "web/serviceworker/custom_strategies",
-            $this->serializer->serialize($strategies)
-        );
 
         $setup->endSetup();
     }

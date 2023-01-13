@@ -4,7 +4,7 @@
        <arguments>
            <argument name="routerList" xsi:type="array">
                <item name="serviceworker" xsi:type="array">
-                   <item name="class" xsi:type="string">Meanbee\ServiceWorker\Controller\Router</item>
+                   <item name="class" xsi:type="string">M2Boilerplate\ServiceWorker\Controller\Router</item>
                    <item name="disable" xsi:type="boolean">false</item>
                    <item name="sortOrder" xsi:type="string">55</item>
                </item>

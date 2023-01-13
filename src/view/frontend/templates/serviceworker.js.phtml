@@ -1,95 +1,89 @@
-<?php /** @var \Meanbee\ServiceWorker\Block\Js $block */ ?>
+<?php /** @var \M2Boilerplate\ServiceWorker\Block\Js $block */ ?>
 'use strict';
 
 // Import and initialise external dependencies
 // #####################################
 
 <?php if ($externalScripts = $block->getExternalScriptUrls()): ?>
-importScripts(<?php echo implode(", ", array_map(function ($url) { return "'{$url}'"; }, $externalScripts)) ?>);
+importScripts(<?= implode(", ", array_map(function ($url) { return "'{$url}'"; }, $externalScripts)) ?>);
 <?php endif; ?>
 
 <?php if ($block->isGaOfflineEnabled()): ?>
+// Initialize the google analytics
+// #####################################
 workbox.googleAnalytics.initialize();
 <?php endif; ?>
 
 // Initialize the workbox service worker
 // #####################################
 
-const wbsw = new WorkboxSW({
-    clientsClaim: true,
-    skipWaiting: true,
-});
+workbox.core.skipWaiting();
+workbox.core.clientsClaim();
 
 // Pre-cache fallback responses
 // #####################################
 
-const OFFLINE_PAGE_URL = '<?php echo $block->getOfflinePageUrl() ?>';
+const OFFLINE_PAGE_URL = '<?= $block->getOfflinePageUrl() ?>';
+const DEPLOYED_VERSION = '<?= $block->getVersion() ?>';
 
-wbsw.precache([
-    {
-        url: OFFLINE_PAGE_URL,
-        revision: '<?php echo $block->getVersion() ?>',
-    }
-]);
+workbox.core.setCacheNameDetails({
+  suffix: DEPLOYED_VERSION
+});
 
 // Serve assets using cache-first strategy
 // #####################################
 
-wbsw.router.registerRoute(/\.(png|jpeg|jpg|gif)$/, wbsw.strategies.cacheFirst());
-wbsw.router.registerRoute(/\.(js|css)$/, wbsw.strategies.cacheFirst());
+workbox.routing.registerRoute(/static\/version[0-9]{10}\/.*\.(png|jpeg|jpg|gif|ico|svg)$/, new workbox.strategies.CacheFirst());
+workbox.routing.registerRoute(/static\/version[0-9]{10}\/.*\.(js|css|json)$/, new workbox.strategies.CacheFirst());
 
-// Serve backend requests with network-only strategy
+
+// Clean Up old caches
 // #####################################
-
-wbsw.router.registerRoute('<?php echo $block->getBackendPathPrefix() ?>', wbsw.strategies.networkOnly());
-
-// Serve paths with configured custom strategies
-// #####################################
-
-const custom_strategies = <?php echo $block->jsonEncode($block->getCustomStrategies()) ?>;
-
-for (let route of custom_strategies) {
-    wbsw.router.registerRoute(route.path, ({event}) => {
-        return wbsw.strategies[route.strategy]().handle({event})
-            .then((response) => {
-                if (!response && event.request.mode == 'navigate') {
-                    return caches.match(OFFLINE_PAGE_URL);
-                }
-                return response;
-            })
-            .catch(() => event.request.mode == 'navigate' ? caches.match(OFFLINE_PAGE_URL) : Response.error());
-    });
-}
-
-// Set default strategies
-// #####################################
-
-wbsw.router.setDefaultHandler({
-    handler: ({event}) => {
-        switch (event.request.method) {
-            case 'GET':
-                // For GET requests, use network-first with offline page fallback
-                return wbsw.strategies.networkFirst().handle({event})
-                    .then((response) => {
-                        if (!response && event.request.mode == 'navigate') {
-                            return caches.match(OFFLINE_PAGE_URL);
-                        }
-                        return response;
-                    });
-            case 'POST':
-                // For POST requests, use network-only with offline page fallback
-                return wbsw.strategies.networkOnly().handle({event})
-                    .catch(() => event.request.mode == 'navigate' ? caches.match(OFFLINE_PAGE_URL) : Response.error());
-            default:
-                // Use network-only for all other request types
-                return wbsw.strategies.networkOnly().handle({event});
-        }
-    },
+self.addEventListener('activate', function(event) {
+  event.waitUntil(
+    caches
+      .keys()
+      .then(keys => keys.filter(key => !key.endsWith(DEPLOYED_VERSION)))
+      .then(keys => Promise.all(keys.map(key => caches.delete(key))))
+  );
 });
+
+// Add Offline Fallback
+// #####################################
+workbox.navigationPreload.enable();
+if (OFFLINE_PAGE_URL) {
+    const networkOnly = new workbox.strategies.NetworkOnly();
+    const CACHE_NAME = 'offline-html-'+DEPLOYED_VERSION;
+    // This assumes /offline.html is a URL for your self-contained
+    // Populate the cache with the offline HTML page when the
+    // service worker is installed.
+    self.addEventListener('install', async (event) => {
+      return event.waitUntil(
+        caches.open(CACHE_NAME)
+          .then((cache) => cache.add(OFFLINE_PAGE_URL))
+      );
+    });
+    const navigationHandler = async (params) => {
+      try {
+        // Attempt a network request.
+        return await networkOnly.handle(params);
+      } catch (error) {
+        // If it fails, return the cached HTML.
+        return caches.match(OFFLINE_PAGE_URL, {
+          cacheName: CACHE_NAME
+        });
+      }
+    };
+    // Register this strategy to handle all navigations.
+    workbox.routing.registerRoute(
+      new workbox.routing.NavigationRoute(navigationHandler)
+    );
+}
 
 <?php if ($childHtml = $block->getChildHtml()): ?>
 // Extensions
 // #####################################
-
-<?php echo $childHtml ?>
+<?= $childHtml ?>
 <?php endif; ?>
+
+

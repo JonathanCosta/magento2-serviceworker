@@ -1,17 +1,17 @@
-# Meanbee_ServiceWorker
+# M2Boilerplate ServiceWorker
 
 A Magento 2 extension that adds [Service Worker](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API) support.
 
 Features:
 * Fully customisable Service Worker script
 * Cache-first approach for page assets resulting in faster page loads
-* Offline cache for CMS and catalog pages allowing viewing previously visited pages while in poor network conditions
+* Offline cms page, when no network is available 
 
 ## Installation
 
 Add this extension to your Magento installation with Composer:
 
-    composer require meanbee/magento2-serviceworker
+    composer require m2-boilerplate/module-service-worker
 
 ## Usage
 
@@ -29,7 +29,7 @@ If the base service worker file doesn't fit all of your needs you can easily add
     <page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
         <body>
             <referenceBlock name="serviceworker">
-                <block class="\Meanbee\MoreLogic\Block\Logic" name="morelogic.logic" template="Meanbee_MoreLogic::logic.phtml" />
+                <block name="morelogic.logic" template="M2Boilerplate_MoreLogic::logic.phtml" />
             </referenceBlock>
         </body>
     </page>
@@ -39,23 +39,6 @@ If the base service worker file doesn't fit all of your needs you can easily add
 ### Why do page assets not appear to be cached when Magento is in default/developer mode?
 
 Magento 2 uses a timestamp version string in the URL for static files to allow busting browser cache when the static content gets updated. In developer mode, this version string is updated for every unique page request. This means that from the browser's perspective, the static assets, such as CSS files, are completely different on each page, even though the content is the same. Therefore, when the assets get cached by the Service Worker in Magento 2 developer mode, they only get cached for that specific page. Production mode only generates the static assets through command line and keeps the version timestamp fixed, so it doesn't experience this issue.
-
-## Development
-
-### Setting up a development environment
-
-A Docker development environment is included with the project:
-
-    docker-compose run --rm cli magento-extension-installer Meanbee_ServiceWorker \
-    && docker-compose up -d
-
-### npm dependencies
-
-The extension uses npm to manage some of its web dependencies. Dependencies are installed and updated using npm, then
-copied into the `src/` directory using an npm script. To update the web dependencies, run:
-
-    docker-compose run --rm node npm update
-    docker-compose run --rm node npm run build
 
 ### Testing Service Workers on Chrome
 

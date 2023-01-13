@@ -2,6 +2,6 @@
 
 \Magento\Framework\Component\ComponentRegistrar::register(
     \Magento\Framework\Component\ComponentRegistrar::MODULE,
-    "Meanbee_ServiceWorker",
+    "M2Boilerplate_ServiceWorker",
     __DIR__
 );
